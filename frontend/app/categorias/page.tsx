@@ -12,11 +12,18 @@ interface Categoria {
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+async function leerRespuesta(respuesta: Response) {
+  const texto = await respuesta.text();
+  return texto ? JSON.parse(texto) : {};
+}
+
 export default function CategoriasPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [idEditar, setIdEditar] = useState<number | null>(null);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] =
+    useState<Categoria | null>(null);
   const [cargando, setCargando] = useState(true);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -27,12 +34,13 @@ export default function CategoriasPage() {
 
     try {
       const respuesta = await fetch(`${API_URL}/api/categorias`);
+      const datos = await leerRespuesta(respuesta);
 
       if (!respuesta.ok) {
-        throw new Error("No se pudieron consultar las categorías.");
+        throw new Error(
+          datos.mensaje || "No se pudieron consultar las categorías."
+        );
       }
-
-      const datos = await respuesta.json();
 
       const lista = Array.isArray(datos)
         ? datos
@@ -52,7 +60,9 @@ export default function CategoriasPage() {
     cargarCategorias();
   }, []);
 
-  async function guardarCategoria(e: React.FormEvent<HTMLFormElement>) {
+  async function guardarCategoria(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
     setMensaje("");
     setError("");
@@ -74,10 +84,12 @@ export default function CategoriasPage() {
         }
       );
 
-      const datos = await respuesta.json();
+      const datos = await leerRespuesta(respuesta);
 
       if (!respuesta.ok) {
-        throw new Error(datos.mensaje || "No se pudo guardar la categoría.");
+        throw new Error(
+          datos.mensaje || "No se pudo guardar la categoría."
+        );
       }
 
       setMensaje(
@@ -90,7 +102,38 @@ export default function CategoriasPage() {
       await cargarCategorias();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Ocurrió un error al guardar."
+        err instanceof Error
+          ? err.message
+          : "Ocurrió un error al guardar la categoría."
+      );
+    }
+  }
+
+  async function verCategoria(id: number) {
+    setError("");
+    setMensaje("");
+
+    try {
+      const respuesta = await fetch(
+        `${API_URL}/api/categorias/${id}`
+      );
+
+      const datos = await leerRespuesta(respuesta);
+
+      if (!respuesta.ok) {
+        throw new Error(
+          datos.mensaje || "No se pudo consultar la categoría."
+        );
+      }
+
+      setCategoriaSeleccionada(
+        datos.categoria || datos.data || datos
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo consultar la categoría."
       );
     }
   }
@@ -99,6 +142,7 @@ export default function CategoriasPage() {
     setIdEditar(categoria.id_categoria);
     setNombre(categoria.nombre_categoria);
     setDescripcion(categoria.descripcion || "");
+    setCategoriaSeleccionada(null);
     setMensaje("");
     setError("");
   }
@@ -110,92 +154,119 @@ export default function CategoriasPage() {
   }
 
   async function eliminarCategoria(id: number) {
-    if (!window.confirm("¿Estás segura de eliminar esta categoría?")) {
-      return;
-    }
+    const confirmar = window.confirm(
+      "¿Estás segura de que deseas eliminar esta categoría?"
+    );
+
+    if (!confirmar) return;
 
     setMensaje("");
     setError("");
 
     try {
-      const respuesta = await fetch(`${API_URL}/api/categorias/${id}`, {
-        method: "DELETE",
-      });
+      const respuesta = await fetch(
+        `${API_URL}/api/categorias/${id}`,
+        { method: "DELETE" }
+      );
 
-      const datos = await respuesta.json();
+      const datos = await leerRespuesta(respuesta);
 
       if (!respuesta.ok) {
-        throw new Error(datos.mensaje || "No se pudo eliminar la categoría.");
+        throw new Error(
+          datos.mensaje || "No se pudo eliminar la categoría."
+        );
       }
 
       setMensaje("Categoría eliminada correctamente.");
+      setCategoriaSeleccionada(null);
+
+      if (idEditar === id) {
+        limpiarFormulario();
+      }
+
       await cargarCategorias();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Ocurrió un error al eliminar."
+        err instanceof Error
+          ? err.message
+          : "Ocurrió un error al eliminar la categoría."
       );
     }
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6 text-gray-800">
+    <main className="min-h-screen bg-[#F8F3EE] px-4 py-10 text-[#59483F] sm:px-8">
       <div className="mx-auto max-w-5xl">
-        <h1 className="mb-2 text-3xl font-bold">
-          Administración de categorías
-        </h1>
+        <header className="mb-8 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#987C69]">
+            Boutique.KC
+          </p>
 
-        <p className="mb-8 text-gray-600">
-          Registra y administra las categorías de la boutique.
-        </p>
+          <h1 className="text-3xl font-bold sm:text-4xl">
+            Administración de categorías
+          </h1>
 
-        <section className="mb-8 rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-5 text-xl font-semibold">
+          <p className="mt-3 text-[#806F63]">
+            Registra y administra las categorías de la boutique.
+          </p>
+        </header>
+
+        <section className="mb-8 rounded-2xl border border-[#E5D8CC] bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="mb-6 text-xl font-semibold">
             {idEditar ? "Editar categoría" : "Registrar categoría"}
           </h2>
 
-          <form onSubmit={guardarCategoria} className="space-y-4">
+          <form onSubmit={guardarCategoria} className="space-y-5">
             <div>
-              <label className="mb-1 block font-medium">
+              <label
+                htmlFor="nombre"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Nombre de la categoría
               </label>
 
               <input
+                id="nombre"
                 type="text"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej. Blusas"
+                placeholder="Ej. Blusas, pantalones, vestidos"
                 required
-                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-pink-500"
+                className="w-full rounded-lg border border-[#D9C9BC] bg-[#FCFAF8] px-4 py-3 outline-none transition focus:border-[#987C69] focus:ring-2 focus:ring-[#D9C9BC]"
               />
             </div>
 
             <div>
-              <label className="mb-1 block font-medium">
+              <label
+                htmlFor="descripcion"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Descripción
               </label>
 
               <textarea
+                id="descripcion"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 placeholder="Describe la categoría"
-                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-pink-500"
                 rows={3}
+                className="w-full resize-none rounded-lg border border-[#D9C9BC] bg-[#FCFAF8] px-4 py-3 outline-none transition focus:border-[#987C69] focus:ring-2 focus:ring-[#D9C9BC]"
               />
             </div>
 
             <div className="flex flex-wrap gap-3">
               <button
                 type="submit"
-                className="rounded-lg bg-pink-600 px-5 py-3 font-medium text-white hover:bg-pink-700"
+                className="rounded-lg bg-[#806657] px-6 py-3 font-semibold text-white transition hover:bg-[#59483F]"
               >
                 {idEditar ? "Guardar cambios" : "Registrar categoría"}
               </button>
 
-              {idEditar !== null && (
+              {idEditar && (
                 <button
                   type="button"
                   onClick={limpiarFormulario}
-                  className="rounded-lg border border-gray-300 px-5 py-3"
+                  className="rounded-lg border border-[#D9C9BC] px-6 py-3 font-semibold text-[#59483F] transition hover:bg-[#F1E8E0]"
                 >
                   Cancelar
                 </button>
@@ -205,37 +276,65 @@ export default function CategoriasPage() {
         </section>
 
         {mensaje && (
-          <p className="mb-4 rounded-lg bg-green-100 p-3 text-green-800">
+          <div className="mb-5 rounded-lg border border-[#C9D8C4] bg-[#EDF3E9] p-4 text-sm text-[#47613F]">
             {mensaje}
-          </p>
+          </div>
         )}
 
         {error && (
-          <p className="mb-4 rounded-lg bg-red-100 p-3 text-red-700">
+          <div className="mb-5 rounded-lg border border-[#E5C7BD] bg-[#F9ECE8] p-4 text-sm text-[#914F40]">
             {error}
-          </p>
+          </div>
         )}
 
-        <section className="rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-5 text-xl font-semibold">
+        {categoriaSeleccionada && (
+          <section className="mb-8 rounded-2xl border border-[#E5D8CC] bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold">
+                Detalles de la categoría
+              </h2>
+
+              <button
+                onClick={() => setCategoriaSeleccionada(null)}
+                className="text-sm font-semibold text-[#806657] hover:underline"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            <p className="mb-2">
+              <strong>Nombre:</strong>{" "}
+              {categoriaSeleccionada.nombre_categoria}
+            </p>
+
+            <p>
+              <strong>Descripción:</strong>{" "}
+              {categoriaSeleccionada.descripcion || "Sin descripción"}
+            </p>
+          </section>
+        )}
+
+        <section className="rounded-2xl border border-[#E5D8CC] bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="mb-6 text-xl font-semibold">
             Categorías registradas
           </h2>
 
           {cargando ? (
-            <p>Cargando categorías...</p>
+            <p className="py-6 text-center text-[#806F63]">
+              Cargando categorías...
+            </p>
           ) : categorias.length === 0 ? (
-            <p className="text-gray-500">
+            <p className="py-6 text-center text-[#806F63]">
               No hay categorías registradas.
             </p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full min-w-[600px] text-left">
                 <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="p-3">ID</th>
-                    <th className="p-3">Nombre</th>
-                    <th className="p-3">Descripción</th>
-                    <th className="p-3">Acciones</th>
+                  <tr className="border-b border-[#E5D8CC] bg-[#F8F3EE]">
+                    <th className="px-4 py-3">Nombre</th>
+                    <th className="px-4 py-3">Descripción</th>
+                    <th className="px-4 py-3">Acciones</th>
                   </tr>
                 </thead>
 
@@ -243,16 +342,30 @@ export default function CategoriasPage() {
                   {categorias.map((categoria) => (
                     <tr
                       key={categoria.id_categoria}
-                      className="border-b"
+                      className="border-b border-[#EFE6DE] last:border-0"
                     >
-                      <td className="p-3">{categoria.id_categoria}</td>
-                      <td className="p-3">{categoria.nombre_categoria}</td>
-                      <td className="p-3">{categoria.descripcion}</td>
-                      <td className="p-3">
+                      <td className="px-4 py-4 font-medium">
+                        {categoria.nombre_categoria}
+                      </td>
+
+                      <td className="px-4 py-4">
+                        {categoria.descripcion || "Sin descripción"}
+                      </td>
+
+                      <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2">
                           <button
+                            onClick={() =>
+                              verCategoria(categoria.id_categoria)
+                            }
+                            className="rounded-md bg-[#EDE3DA] px-3 py-2 text-sm font-semibold text-[#59483F] hover:bg-[#E1D2C5]"
+                          >
+                            Ver
+                          </button>
+
+                          <button
                             onClick={() => prepararEdicion(categoria)}
-                            className="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+                            className="rounded-md bg-[#806657] px-3 py-2 text-sm font-semibold text-white hover:bg-[#59483F]"
                           >
                             Editar
                           </button>
@@ -261,7 +374,7 @@ export default function CategoriasPage() {
                             onClick={() =>
                               eliminarCategoria(categoria.id_categoria)
                             }
-                            className="rounded bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                            className="rounded-md bg-[#A65F50] px-3 py-2 text-sm font-semibold text-white hover:bg-[#87483C]"
                           >
                             Eliminar
                           </button>
