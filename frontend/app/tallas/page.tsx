@@ -191,7 +191,7 @@ export default function TallasPage() {
       <div className="mx-auto max-w-5xl">
         <header className="mb-8 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#987C69]">
-            Boutique.KC
+            YEYLA
           </p>
 
           <h1 className="text-3xl font-bold sm:text-4xl">
