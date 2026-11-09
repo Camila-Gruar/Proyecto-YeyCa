@@ -1,69 +1,166 @@
-import Image from "next/image";
+
+import Link from "next/link";
+
+const modulos = [
+  {
+    nombre: "Productos",
+    descripcion: "Administra los productos de tu tienda.",
+    cantidad: "Inventario",
+    icono: "▧",
+    ruta: "/productos",
+  },
+  {
+    nombre: "Categorías",
+    descripcion: "Organiza los productos por categorías.",
+    cantidad: "Organización",
+    icono: "▤",
+    ruta: "/categorias",
+  },
+  {
+    nombre: "Tallas",
+    descripcion: "Gestiona las tallas disponibles.",
+    cantidad: "Tallas disponibles",
+    icono: "◫",
+    ruta: "/tallas",
+  },
+  {
+    nombre: "Colores",
+    descripcion: "Administra los colores de los productos.",
+    cantidad: "Variedad",
+    icono: "◉",
+    ruta: "/colores",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-[#F8F3EE] text-[#59483F] md:flex">
+
+      {/* Menú lateral */}
+      <aside className="w-full bg-[#E8D8CC] p-6 md:min-h-screen md:w-64">
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold tracking-[0.2em]">
+            YEYLA
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-1 text-sm text-[#806D60]">
+            Tienda virtual
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#927D6F]">
+          Menú principal
+        </p>
+
+        <nav className="flex flex-wrap gap-2 md:flex-col">
+          <Link
+            href="/"
+            className="rounded-xl bg-[#F8F3EE] px-4 py-3 font-semibold"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            ◈ Área de trabajo
+          </Link>
+
+          {modulos.map((modulo) => (
+            <Link
+              key={modulo.nombre}
+              href={modulo.ruta}
+              className="rounded-xl px-4 py-3 transition hover:bg-[#F2E8DF]"
+            >
+              {modulo.icono} {modulo.nombre}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="mt-12 hidden rounded-2xl bg-[#F2E8DF] p-4 md:block">
+          <p className="font-semibold">YEYLA</p>
+          <p className="mt-1 text-sm text-[#806D60]">
+            Administra tu tienda de manera fácil y organizada.
+          </p>
         </div>
-      </main>
-    </div>
+      </aside>
+
+      {/* Contenido principal */}
+      <section className="flex-1 p-6 md:p-10">
+
+        {/* Encabezado */}
+        <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-[#A18A7B]">
+              PANEL DE ADMINISTRACIÓN
+            </p>
+            <h2 className="mt-2 text-3xl font-bold">
+              Área de Trabajo
+            </h2>
+            <p className="mt-2 text-[#806D60]">
+              Bienvenido al sistema de gestión de YEYLA.
+            </p>
+          </div>
+
+          <div className="rounded-full border border-[#E8D8CC] bg-white px-5 py-3 text-sm">
+            ✧ Panel administrativo
+          </div>
+        </header>
+
+        {/* Bienvenida */}
+        <div className="mb-10 rounded-3xl bg-[#D6C0AE] p-7 md:p-10">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[#725B4D]">
+            Bienvenido a YEYLA
+          </p>
+
+          <h3 className="max-w-xl text-2xl font-bold md:text-3xl">
+            Todo lo que necesitas para administrar tu tienda, en un solo lugar.
+          </h3>
+
+          <p className="mt-4 max-w-xl text-[#59483F]">
+            Consulta, registra, actualiza y organiza la información de tus productos.
+          </p>
+        </div>
+
+        {/* Módulos */}
+        <div className="mb-6">
+          <h3 className="text-xl font-bold">Módulos de gestión</h3>
+          <p className="mt-1 text-sm text-[#927D6F]">
+            Selecciona el módulo que deseas administrar.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {modulos.map((modulo) => (
+            <Link
+              key={modulo.nombre}
+              href={modulo.ruta}
+              className="group rounded-2xl border border-[#E8D8CC] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#F2E8DF] text-2xl">
+                {modulo.icono}
+              </div>
+
+              <h4 className="text-lg font-bold">
+                {modulo.nombre}
+              </h4>
+
+              <p className="mt-2 min-h-12 text-sm leading-6 text-[#927D6F]">
+                {modulo.descripcion}
+              </p>
+
+              <div className="mt-5 flex items-center justify-between border-t border-[#F2E8DF] pt-4">
+                <span className="text-xs text-[#A18A7B]">
+                  {modulo.cantidad}
+                </span>
+
+                <span className="font-semibold text-[#A17D68] group-hover:translate-x-1">
+                  →
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Pie de página */}
+        <footer className="mt-12 border-t border-[#E8D8CC] pt-5 text-center text-sm text-[#A18A7B]">
+          YEYLA © 2026 · Sistema de gestión de tienda virtual
+        </footer>
+
+      </section>
+    </main>
   );
 }
