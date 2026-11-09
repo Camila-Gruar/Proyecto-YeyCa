@@ -3,6 +3,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors');
 const pool = require('./config/database');
 
 const categoriaRoutes = require('./routes/categoria.routes');
@@ -12,7 +13,9 @@ const productoRoutes = require('./routes/producto.routes');
 
 const app = express();
 
-
+app.use(cors({
+    origin: 'http://localhost:3001'
+}));
 
 app.use(express.json());
 
